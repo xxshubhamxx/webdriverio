@@ -53,7 +53,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.1.0",
-    "@wdio/globals": "8.38.2"
+    "@wdio/globals": "8.38.2",
+    "@browserstack/ai-sdk-node": "github:browserstack/ai-sdk-node#healing-poc"
   },
   "publishConfig": {
     "access": "public"
