@@ -47,7 +47,7 @@ import type Percy from './Percy/Percy.js'
 import { sendStart, sendFinish } from './instrumentation/funnelInstrumentation.js'
 import BrowserStackConfig from './config.js'
 import { setupExitHandlers } from './exitHandler.js'
-import aiSDK from '@browserstack/ai-sdk-node';
+import aiSDK from '@browserstack/ai-sdk-node'
 
 type BrowserstackLocal = BrowserstackLocalLauncher.Local & {
     pid?: number
@@ -193,26 +193,28 @@ export default class BrowserstackLauncherService implements Services.ServiceInst
         }
         const setupTcgConfigFile = (tcgConfig: any) => {
             try {
-              const browserstackFolderPath: any = path.join('tmp');
-              if (!fs.existsSync(browserstackFolderPath)){
-                fs.mkdirSync(browserstackFolderPath);
-              }
-              const tcgAuthConfigPath: any = path.join(browserstackFolderPath, 'tcgConfig.json');
-              if (fs.existsSync(tcgAuthConfigPath)) {
-                fs.unlinkSync(tcgAuthConfigPath) ;
-              }
-          
-              fs.writeFileSync(tcgAuthConfigPath, JSON.stringify(tcgConfig));
-            } catch (err) {
-              console.log(`Cound not setup tcgAuth config file due to error: ${err}`);
-            }
-          } ;
+                const browserstackFolderPath: any = path.join('tmp')
+                if (!fs.existsSync(browserstackFolderPath)){
+                    fs.mkdirSync(browserstackFolderPath)
+                }
+                const tcgAuthConfigPath: any = path.join(browserstackFolderPath, 'tcgConfig.json')
+                if (fs.existsSync(tcgAuthConfigPath)) {
+                    fs.unlinkSync(tcgAuthConfigPath)
+                }
 
-        const authResult: any = await aiSDK.BrowserstackHealing.init('aYP4ZxYJVdY4xoFzrSut', 'shubhamg_BMzadl', 'https://tcg.bsstag.com', '1.32.21');
-        const { isAuthenticated, userId, groupId, sessionToken, isGroupAIEnabled, isHealingEnabled } = authResult;
-        setupTcgConfigFile(authResult);
-        if (isAuthenticated) {
-            caps = aiSDK.BrowserstackHealing.initializeCapabilities(caps);
+                fs.writeFileSync(tcgAuthConfigPath, JSON.stringify(tcgConfig))
+            } catch (err) {
+                console.log(`Cound not setup tcgAuth config file due to error: ${err}`)
+            }
+        }
+
+        const authResult: any = await aiSDK.BrowserstackHealing.init('aYP4ZxYJVdY4xoFzrSut', 'shubhamg_BMzadl', 'https://tcg.bsstag.com', '1.32.21')
+        const { isAuthenticated, userId, groupId, sessionToken, isGroupAIEnabled, isHealingEnabled } = authResult
+        console.log(`isAuthenticated: ${isAuthenticated}, userId: ${userId}, groupId: ${groupId}, sessionToken: ${sessionToken}, isGroupAIEnabled: ${isGroupAIEnabled}, isHealingEnabled: ${isHealingEnabled}`)
+        setupTcgConfigFile(authResult)
+        //TODO: Remove the true check once TCG and stagctoi are up
+        if ((isAuthenticated && isHealingEnabled) || true ) {
+            caps = aiSDK.BrowserstackHealing.initializeCapabilities(caps)
         }
     }
 
