@@ -155,6 +155,7 @@ export default class BrowserstackService implements Services.ServiceInstance {
         const isAuthenticated:any = authInfo.isAuthenticated
         const isHealingEnabled:any = authInfo.isHealingEnabled
         //TODO: Remove the true check once TCG and stagctoi are up
+        // eslint-disable-next-line no-constant-condition
         if ((isAuthenticated && isHealingEnabled) || true ) {
             console.log('User is authenticated')
             const sessionToken: any = authInfo.sessionToken

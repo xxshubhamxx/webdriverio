@@ -213,6 +213,7 @@ export default class BrowserstackLauncherService implements Services.ServiceInst
         console.log(`isAuthenticated: ${isAuthenticated}, userId: ${userId}, groupId: ${groupId}, sessionToken: ${sessionToken}, isGroupAIEnabled: ${isGroupAIEnabled}, isHealingEnabled: ${isHealingEnabled}`)
         setupTcgConfigFile(authResult)
         //TODO: Remove the true check once TCG and stagctoi are up
+        // eslint-disable-next-line no-constant-condition
         if ((isAuthenticated && isHealingEnabled) || true ) {
             caps = aiSDK.BrowserstackHealing.initializeCapabilities(caps)
         }
