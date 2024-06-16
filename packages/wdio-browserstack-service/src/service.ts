@@ -177,7 +177,7 @@ export default class BrowserstackService implements Services.ServiceInstance {
                 const value1: string = isNotUndefinedOrNull(value) && isString(value) ? value.replace(/'/g, '\\\'').replace(/"/g, '\\"') : ''
                 try {
                     const result: any = await orginalFunc(using, value)
-                    const script: string = await aiSDK.BrowserstackHealing.logData(using1, value1, undefined, undefined, authInfo.groupID, sessionId, undefined, tcgDetails)
+                    let script: string = await aiSDK.BrowserstackHealing.logData(using1, value1, undefined, undefined, authInfo.groupID, sessionId, undefined, tcgDetails)
                     if (script) {
                         console.log('Executing logData script' + script)
                         await browser.execute(script)
@@ -185,7 +185,7 @@ export default class BrowserstackService implements Services.ServiceInstance {
                     if (!result.error) {
                         return result
                     }
-                    const script: string = await aiSDK.BrowserstackHealing.healFailure(using1, value1, undefined, undefined, authInfo.userID, authInfo.groupID, sessionId, undefined, undefined, authInfo.groupAIEnabled, tcgDetails)
+                    script = await aiSDK.BrowserstackHealing.healFailure(using1, value1, undefined, undefined, authInfo.userID, authInfo.groupID, sessionId, undefined, undefined, authInfo.groupAIEnabled, tcgDetails)
                     if (script) {
                         await browser.execute(script)
                         console.log('Executing healing script' + script)
