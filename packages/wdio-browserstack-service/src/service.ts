@@ -154,9 +154,7 @@ export default class BrowserstackService implements Services.ServiceInstance {
         const authInfo:any = readTcgAuthConfigToGlobal()
         const isAuthenticated:any = authInfo.isAuthenticated
         const isHealingEnabled:any = authInfo.isHealingEnabled
-        //TODO: Remove the true check once TCG and stagctoi are up
-        // eslint-disable-next-line no-constant-condition
-        if ((isAuthenticated && isHealingEnabled) || true ) {
+        if (isAuthenticated && isHealingEnabled) {
             console.log('User is authenticated')
             const sessionToken: any = authInfo.sessionToken
             const resp: any = await aiSDK.BrowserstackHealing.setToken(this._browser.sessionId, sessionToken, 'https://tcg.bsstag.com')
@@ -176,6 +174,7 @@ export default class BrowserstackService implements Services.ServiceInstance {
                 const using1: string = isNotUndefinedOrNull(using) && isString(using) ? using.replace(/'/g, '\\\'').replace(/"/g, '\\"') : ''
                 const value1: string = isNotUndefinedOrNull(value) && isString(value) ? value.replace(/'/g, '\\\'').replace(/"/g, '\\"') : ''
                 try {
+
                     const result: any = await orginalFunc(using, value)
                     let script: string = await aiSDK.BrowserstackHealing.logData(using1, value1, undefined, undefined, authInfo.groupID, sessionId, undefined, tcgDetails)
                     if (script) {
