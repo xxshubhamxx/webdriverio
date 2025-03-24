@@ -9,7 +9,7 @@ import { spawn } from 'node:child_process'
 import { PercyLogger } from './PercyLogger.js'
 import PerformanceTester from '../instrumentation/performance/performance-tester.js'
 import * as PERFORMANCE_SDK_EVENTS from '../instrumentation/performance/constants.js'
-import fetchWrap from 'src/fetchWrapper.js'
+import fetchWrap from '../fetchWrapper.js'
 
 class PercyBinary {
     #hostOS = process.platform
