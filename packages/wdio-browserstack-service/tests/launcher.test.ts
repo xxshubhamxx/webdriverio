@@ -1059,7 +1059,7 @@ describe('_uploadApp', () => {
         expect(res).toEqual({ app_url: 'bs://<app-id>' })
     })
 
-    it('throw SevereServiceError if upload fails', async() => {
+    it('throw an Error if upload fails', async() => {
         vi.mocked(fetch).mockReturnValueOnce(Promise.resolve(Response.json({}, { status: 500 })))
         const service = new BrowserstackLauncher(options as BrowserstackConfig & Options.Testrunner, caps, config)
 
@@ -1067,7 +1067,7 @@ describe('_uploadApp', () => {
             await service._uploadApp(options.app as any)
         } catch (e: any) {
             expect(vi.mocked(fetch).mock.calls[0][1]?.method).toEqual('POST')
-            expect(e.name).toEqual('SevereServiceError')
+            expect(e.name).toEqual('Error')
         }
     })
 })
