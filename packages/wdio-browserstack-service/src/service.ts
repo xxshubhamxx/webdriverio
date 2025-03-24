@@ -25,6 +25,7 @@ import { shouldProcessEventForTesthub } from './testHub/utils.js'
 import AiHandler from './ai-handler.js'
 import PerformanceTester from './instrumentation/performance/performance-tester.js'
 import * as PERFORMANCE_SDK_EVENTS from './instrumentation/performance/constants.js'
+import fetchWrap from './fetchWrapper.js'
 
 export default class BrowserstackService implements Services.ServiceInstance {
     private _sessionBaseUrl = 'https://api.browserstack.com/automate/sessions'
@@ -493,13 +494,13 @@ export default class BrowserstackService implements Services.ServiceInstance {
         }
 
         if (this._turboScale) {
-            return fetch(sessionUrl, {
+            return fetchWrap(sessionUrl, {
                 method: 'PATCH',
                 body: JSON.stringify(requestBody),
                 headers
             })
         }
-        return fetch(sessionUrl, {
+        return fetchWrap(sessionUrl, {
             method: 'PUT',
             body: JSON.stringify(requestBody),
             headers
@@ -524,14 +525,14 @@ export default class BrowserstackService implements Services.ServiceInstance {
             }
 
             if (this._turboScale) {
-                const response = await fetch(sessionUrl, {
+                const response = await fetchWrap(sessionUrl, {
                     method: 'GET',
                     headers
                 })
                 const res = response.clone()
                 browserUrl = (await res.json()).url
             } else {
-                const response = await fetch(sessionUrl, {
+                const response = await fetchWrap(sessionUrl, {
                     method: 'GET',
                     headers
                 })

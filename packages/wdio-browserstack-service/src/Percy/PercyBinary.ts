@@ -9,6 +9,7 @@ import { spawn } from 'node:child_process'
 import { PercyLogger } from './PercyLogger.js'
 import PerformanceTester from '../instrumentation/performance/performance-tester.js'
 import * as PERFORMANCE_SDK_EVENTS from '../instrumentation/performance/constants.js'
+import fetchWrap from 'src/fetchWrapper.js'
 
 class PercyBinary {
     #hostOS = process.platform
@@ -104,7 +105,7 @@ class PercyBinary {
         const binaryPath = path.join(destParentDir, binaryName)
         const downloadedFileStream = fs.createWriteStream(zipFilePath)
 
-        const response = await fetch(this.#httpPath as unknown as URL)
+        const response = await fetchWrap(this.#httpPath as unknown as URL)
 
         // @ts-expect-error stream type
         await pipeline(response.body as unknown as RequestInit, downloadedFileStream)

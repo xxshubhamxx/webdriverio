@@ -4,6 +4,7 @@ import { BSTACK_SERVICE_VERSION, DATA_ENDPOINT, BROWSERSTACK_TESTHUB_UUID } from
 import type { BrowserstackConfig, CredentialsForCrashReportUpload, UserConfigforReporting } from './types.js'
 import { DEFAULT_REQUEST_CONFIG, getObservabilityKey, getObservabilityUser } from './util.js'
 import { BStackLogger } from './bstackLogger.js'
+import fetchWrap from './fetchWrapper.js'
 
 type Dict = Record<string, string>
 
@@ -79,7 +80,7 @@ export default class CrashReporter {
             Authorization: `Basic ${encodedAuth}`,
         }
 
-        const response = await fetch(url, {
+        const response = await fetchWrap(url, {
             method: 'POST',
             body: JSON.stringify(data),
             headers

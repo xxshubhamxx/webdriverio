@@ -49,6 +49,7 @@ import UsageStats from './testOps/usageStats.js'
 import TestOpsConfig from './testOps/testOpsConfig.js'
 
 import AccessibilityScripts from './scripts/accessibility-scripts.js'
+import fetchWrap from './fetchWrapper.js'
 
 const pGitconfig = promisify(gitconfig)
 
@@ -203,7 +204,7 @@ export async function nodeRequest(requestType: string, apiEndpoint: string, opti
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), timeout)
 
-        const response = await fetch(`${apiUrl}/${apiEndpoint}`, {
+        const response = await fetchWrap(`${apiUrl}/${apiEndpoint}`, {
             method: requestType,
             signal: controller.signal,
             ...options
@@ -413,7 +414,7 @@ export const launchTestSession = PerformanceTester.measureWrapper(PERFORMANCE_SD
             ...DEFAULT_REQUEST_CONFIG.headers,
             Authorization: `Basic ${encodedAuth}`,
         }
-        const response = await fetch(url, {
+        const response = await fetchWrap(url, {
             method: 'POST',
             headers,
             body: JSON.stringify(data)
@@ -710,7 +711,7 @@ export const stopBuildUpstream = PerformanceTester.measureWrapper(PERFORMANCE_SD
 
     try {
         const url = `${DATA_ENDPOINT}/api/v1/builds/${process.env[BROWSERSTACK_TESTHUB_UUID]}/stop`
-        const response = await fetch(url, {
+        const response = await fetchWrap(url, {
             method: 'PUT',
             headers: {
                 ...DEFAULT_REQUEST_CONFIG.headers,
@@ -1187,7 +1188,7 @@ export async function batchAndPostEvents (eventUrl: string, kind: string, data: 
 
     try {
         const url = `${DATA_ENDPOINT}/${eventUrl}`
-        const response = await fetch(url, {
+        const response = await fetchWrap(url, {
             method: 'POST',
             headers: {
                 ...DEFAULT_REQUEST_CONFIG.headers,
@@ -1591,7 +1592,7 @@ async function makeGetRequest(url: string, params: Record<string, any>, headers:
     const urlObj = new URL(url)
     Object.keys(params).forEach((key) => urlObj.searchParams.append(key, params[key]))
 
-    const response = await fetch(urlObj.toString(), {
+    const response = await fetchWrap(urlObj.toString(), {
         method: 'GET',
         headers,
     })

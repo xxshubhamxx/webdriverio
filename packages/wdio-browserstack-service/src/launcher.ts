@@ -49,6 +49,7 @@ import { sendFinish, sendStart } from './instrumentation/funnelInstrumentation.j
 import AiHandler from './ai-handler.js'
 import PerformanceTester from './instrumentation/performance/performance-tester.js'
 import * as PERFORMANCE_SDK_EVENTS from './instrumentation/performance/constants.js'
+import fetchWrap from './fetchWrapper.js'
 
 type BrowserstackLocal = BrowserstackLocalLauncher.Local & {
     pid?: number
@@ -504,7 +505,7 @@ export default class BrowserstackLauncherService implements Services.ServiceInst
             Authorization: getBasicAuthHeader(this._config.user as string, this._config.key as string),
         }
 
-        const res = await fetch('https://api-cloud.browserstack.com/app-automate/upload', {
+        const res = await fetchWrap('https://api-cloud.browserstack.com/app-automate/upload', {
             method: 'POST',
             body: form,
             headers
