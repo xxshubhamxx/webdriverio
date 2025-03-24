@@ -16,7 +16,7 @@ export default async function fetchWrap(input: RequestInfo | URL, init?: Request
     const agent = proxyUrl ? new ProxyAgent(proxyUrl) : undefined
 
     const updatedInit = {
-        ...init,
+        ...(init || {}),
         agent,
     } as RequestInit & { agent?: Agent }
 
