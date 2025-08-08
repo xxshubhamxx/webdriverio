@@ -1,5 +1,5 @@
 {
-  "name": "@wdio/browserstack-service",
+  "name": "browserstack-webdriverio-integration",
   "version": "8.45.0",
   "description": "WebdriverIO service for better Browserstack integration",
   "author": "Adam Bjerstedt <abjerstedt@gmail.com>",
@@ -8,20 +8,18 @@
   "engines": {
     "node": "^16.13 || >=18"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/webdriverio/webdriverio.git",
-    "directory": "packages/wdio-browserstack-service"
-  },
+  "files": [
+    "build",
+    "package.json",
+    "README.md",
+    "LICENSE-MIT"
+  ],
   "keywords": [
     "webdriverio",
     "wdio",
     "browserstack",
     "wdio-service"
   ],
-  "bugs": {
-    "url": "https://github.com/webdriverio/webdriverio/issues"
-  },
   "type": "module",
   "types": "./build/index.d.ts",
   "exports": {
@@ -54,9 +52,16 @@
   },
   "devDependencies": {
     "@types/node": "^22.2.0",
-    "@wdio/globals": "8.45.0"
+    "@wdio/globals": "8.45.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "clean": "rimraf ./build",
+    "build": "npm run clean && tsc -p tsconfig.prod.json",
+    "build:dev": "tsc -p tsconfig.json -w"
   }
 }

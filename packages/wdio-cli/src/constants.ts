@@ -126,7 +126,7 @@ export const SUPPORTED_PACKAGES = {
         { name: 'sauce', value: '@wdio/sauce-service$--$sauce' },
         { name: 'testingbot', value: '@wdio/testingbot-service$--$testingbot' },
         { name: 'crossbrowsertesting', value: '@wdio/crossbrowsertesting-service$--$crossbrowsertesting' },
-        { name: 'browserstack', value: '@wdio/browserstack-service$--$browserstack' },
+        { name: 'browserstack', value: 'browserstack-wdio-integration$--$browserstack' },
         { name: 'devtools', value: '@wdio/devtools-service$--$devtools' },
         { name: 'vscode', value: 'wdio-vscode-service$--$vscode' },
         { name: 'electron', value: 'wdio-electron-service$--$electron' },
@@ -676,7 +676,8 @@ export const COMMUNITY_PACKAGES_WITH_TS_SUPPORT = [
     'wdio-vscode-service',
     'wdio-nuxt-service',
     'wdio-vite-service',
-    'wdio-gmail-service'
+    'wdio-gmail-service',
+    'browserstack-wdio-integration'
 ]
 
 export const TESTRUNNER_DEFAULTS: Options.Definition<Options.Testrunner> = {

@@ -7,7 +7,7 @@ import logger from '@wdio/logger'
 import { PERCY_LOGS_FILE } from '../constants.js'
 import { COLORS } from '../util.js'
 
-const log = logger('@wdio/browserstack-service')
+const log = logger('browserstack-wdio-integration')
 
 export class PercyLogger {
     public static logFilePath = path.join(process.cwd(), PERCY_LOGS_FILE)
@@ -31,7 +31,7 @@ export class PercyLogger {
     }
 
     private static formatLog(logMessage: string, level: string) {
-        return `${chalk.gray(new Date().toISOString())} ${chalk[COLORS[level]](level.toUpperCase())} ${chalk.whiteBright('@wdio/browserstack-service')} ${logMessage}\n`
+        return `${chalk.gray(new Date().toISOString())} ${chalk[COLORS[level]](level.toUpperCase())} ${chalk.whiteBright('browserstack-wdio-integration')} ${logMessage}\n`
     }
 
     public static info(message: string) {

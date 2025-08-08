@@ -25,7 +25,7 @@ const packages = {
     '@wdio/reporter': 'packages/wdio-reporter',
     '@wdio/allure-reporter': 'packages/wdio-allure-reporter',
     '@wdio/appium-service': 'packages/wdio-appium-service',
-    '@wdio/browserstack-service': 'packages/wdio-browserstack-service',
+    'browserstack-wdio-integration': 'packages/wdio-browserstack-service',
     '@wdio/crossbrowsertesting-service': 'packages/wdio-crossbrowsertesting-service',
     '@wdio/cucumber-framework': 'packages/wdio-cucumber-framework',
     '@wdio/devtools-service': 'packages/wdio-devtools-service',

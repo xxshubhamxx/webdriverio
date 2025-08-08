@@ -1,6 +1,5 @@
 ---
 id: browserstack
-title: BrowserStack Accessibility Testing
 ---
 
 # BrowserStack Accessibility Testing
@@ -22,41 +21,9 @@ The following are the advantages of Automated tests:
 
 Follow these steps to integrate your WebdriverIO test suites with BrowserStack's Accessibility Testing:
 
-1. Install `@wdio/browserstack-service` npm package.
+1. Install `browserstack-wdio-integration` npm package.
 
 ```bash npm2yarn
-npm install --save-dev @wdio/browserstack-service
-```
-
-2. Update `wdio.conf.js` config file.
-
-```javascript
-exports.config = {
-    //...
-    user: '<browserstack_username>' || process.env.BROWSERSTACK_USERNAME,
-    key: '<browserstack_access_key>' || process.env.BROWSERSTACK_ACCESS_KEY,
-    commonCapabilities: {
-      'bstack:options': {
-        projectName: "Your static project name goes here",
-        buildName: "Your static build/job name goes here"
-      }
-    },
-    services: [
-      ['browserstack', {
-        accessibility: true,
-        // Optional configuration options
-        accessibilityOptions: {
-          'wcagVersion': 'wcag21a',
-          'includeIssueType': {
-            'bestPractice': false,
-            'needsReview': true
-          },
-          'includeTagsInTestingScope': ['Specify tags of test cases to be included'],
-          'excludeTagsInTestingScope': ['Specify tags of test cases to be excluded']
-        },
-      }]
-    ],
-    //...
-  };
+npm install --save-dev browserstack-wdio-integration
 ```
 You can view detailed instructions [here](https://www.browserstack.com/docs/accessibility/automated-tests/get-started/webdriverio?utm_source=webdriverio&utm_medium=partnered&utm_campaign=documentation).

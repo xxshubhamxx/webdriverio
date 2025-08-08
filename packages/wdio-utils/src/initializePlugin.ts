@@ -7,6 +7,7 @@ import { safeImport, isAbsolute } from './utils.js'
  * 1. if package name is scoped (starts with "@"), require scoped package name
  * 2. otherwise try to require "@wdio/<name>-<type>"
  * 3. otherwise try to require "wdio-<name>-<type>"
+ * 4. for compatibility, map well-known aliases to custom packages (e.g. BrowserStack)
  */
 export default async function initializePlugin (name: string, type?: string): Promise<Services.ServicePlugin | Services.RunnerPlugin> {
     /**
@@ -38,6 +39,16 @@ export default async function initializePlugin (name: string, type?: string): Pr
     const plugin = await safeImport(`wdio-${name.toLowerCase()}-${type}`)
     if (plugin) {
         return plugin
+    }
+
+    /**
+     * compatibility aliases for known services with custom package names
+     */
+    if (type === 'service' && name.toLowerCase() === 'browserstack') {
+        const bsPlugin = await safeImport('browserstack-wdio-integration')
+        if (bsPlugin) {
+            return bsPlugin
+        }
     }
 
     throw new Error(

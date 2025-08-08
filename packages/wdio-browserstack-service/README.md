@@ -6,10 +6,10 @@ WebdriverIO BrowserStack Service
 ## Installation
 
 
-The easiest way is to keep `@wdio/browserstack-service` as a devDependency in your `package.json`, via:
+The easiest way is to keep `browserstack-wdio-integration` as a devDependency in your `package.json`, via:
 
 ```sh
-npm install @wdio/browserstack-service --save-dev
+npm install browserstack-wdio-integration --save-dev
 ```
 
 Instructions on how to install `WebdriverIO` can be found [here.](https://webdriver.io/docs/gettingstarted)

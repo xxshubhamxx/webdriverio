@@ -1,13 +1,35 @@
 {
-  "extends": "../../tsconfig.prod",
   "compilerOptions": {
-    "baseUrl": ".",
+    "module": "NodeNext",
+    "target": "es2022",
+    "moduleResolution": "node16",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "outDir": "./build",
-    "rootDir": "./src",
-    "types": ["@wdio/globals/types"]
+    "allowJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "resolveJsonModule": true,
+    "removeComments": false,
+    "strictFunctionTypes": false,
+    "experimentalDecorators": true,
+    "lib": ["es2023", "dom", "es2021"],
+    "types": ["node", "mocha", "@wdio/globals/types"],
+    "baseUrl": ".",
+    "rootDir": "./src"
   },
   "include": [
-    "src/**/*",
-    "../../@types"
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules/*",
+    "__mocks__",
+    "**/*.spec.ts",
+    "coverage",
+    "examples",
+    "/*.js"
   ]
 }

@@ -75,7 +75,7 @@ WebdriverIO में [Browserstack](https://www.browserstack.com) इंटी�
 
 यदि आप लोकल का उपयोग करते हैं, तो आपको अपनी क्षमताओं में `browserstack.local` को `true` सेट करना चाहिए।
 
-यदि आप WDIO टेस्टरनर का उपयोग कर रहे हैं, तो अपने `wdio.conf.js`में [`@wdio/browserstack-service`](https://github.com/webdriverio/webdriverio/tree/master/packages/wdio-browserstack-service) को डाउनलोड और कॉन्फ़िगर करें। यह BrowserStack को चलाने में मदद करता है, और अतिरिक्त सुविधाओं के साथ आता है जो आपके परीक्षणों को BrowserStack सेवा में बेहतर ढंग से एकीकृत करता है।
+यदि आप WDIO टेस्टरनर का उपयोग कर रहे हैं, तो अपने `wdio.conf.js`में [`browserstack-wdio-integration`](https://github.com/webdriverio/webdriverio/tree/master/packages/wdio-browserstack-service) को डाउनलोड और कॉन्फ़िगर करें। यह BrowserStack को चलाने में मदद करता है, और अतिरिक्त सुविधाओं के साथ आता है जो आपके परीक्षणों को BrowserStack सेवा में बेहतर ढंग से एकीकृत करता है।
 
 ### Travis CI के साथ
 

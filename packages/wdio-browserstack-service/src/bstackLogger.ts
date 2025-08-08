@@ -7,7 +7,7 @@ import logger from '@wdio/logger'
 import { LOGS_FILE } from './constants.js'
 import { COLORS } from './util.js'
 
-const log = logger('@wdio/browserstack-service')
+const log = logger('browserstack-wdio-integration')
 
 export class BStackLogger {
     public static logFilePath = path.join(process.cwd(), LOGS_FILE)
@@ -29,7 +29,7 @@ export class BStackLogger {
     }
 
     private static formatLog(logMessage: string, level: string) {
-        return `${chalk.gray(new Date().toISOString())} ${chalk[COLORS[level]](level.toUpperCase())} ${chalk.whiteBright('@wdio/browserstack-service')} ${logMessage}\n`
+        return `${chalk.gray(new Date().toISOString())} ${chalk[COLORS[level]](level.toUpperCase())} ${chalk.whiteBright('browserstack-wdio-integration')} ${logMessage}\n`
     }
 
     public static info(message: string) {

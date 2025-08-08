@@ -75,7 +75,7 @@ Está fuera del alcance de WebdriverIO para apoyar esto, por lo que usted debe e
 
 Si utiliza local, debe establecer `browserstack.local` a `verdadero` en sus capacidades.
 
-Si está utilizando el testrunner WDIO, descargue y configure la [`@wdio/browserstack-service`](https://github.com/webdriverio/webdriverio/tree/master/packages/wdio-browserstack-service) en su `wdio.conf.js`. Ayuda a que BrowserStack funcione, y viene con funciones adicionales que integran mejor sus pruebas al servicio BrowserStack.
+Si está utilizando el testrunner WDIO, descargue y configure la [`browserstack-wdio-integration`](https://github.com/webdriverio/webdriverio/tree/master/packages/wdio-browserstack-service) en su `wdio.conf.js`. Ayuda a que BrowserStack funcione, y viene con funciones adicionales que integran mejor sus pruebas al servicio BrowserStack.
 
 ### Con Travis CI
 
