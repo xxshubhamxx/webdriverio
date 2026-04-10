@@ -108,46 +108,90 @@ steps:
     set -euxo pipefail
     cd webdriverio-browserstack
 
-    echo "===== AFTER RUN ROOT ====="
-    pwd
-    ls -lah
+    mkdir -p .ci-debug
+    rm -rf "$HOME/.browserstack" || true
+    mkdir -p "$HOME/.browserstack"
 
-    echo "===== AFTER RUN DIRECTORIES ====="
-    ls -lah log || true
-    ls -lah logs || true
+    cat > .ci-debug/watch-and-kill-browserstack-cli.sh <<'EOF'
+    #!/usr/bin/env bash
+    set -u
+    LOG_FILE="$1"
 
-    {
-      find . -maxdepth 1 -type f | sort
-      find . -maxdepth 1 -type d | sort
-      find log  -type f 2>/dev/null | sort || true
-      find logs -type f 2>/dev/null | sort || true
-    } > .ci-debug/after-files.txt
+    echo "===== WATCHER START =====" >> "$LOG_FILE"
+    date -Is >> "$LOG_FILE"
 
-    echo "===== NEW OR CHANGED PATHS OF INTEREST ====="
-    comm -13 .ci-debug/before-files.txt .ci-debug/after-files.txt || true
+    for i in $(seq 1 300); do
+      {
+        echo "----- tick $i -----"
+        date -Is
+        echo "## ~/.browserstack tree"
+        find "$HOME/.browserstack" -maxdepth 4 -ls 2>/dev/null || true
+        echo "## matching processes"
+        ps -ef | grep -E 'browserstack|sdk-platform|binary-|BrowserStackLocal' | grep -v grep || true
+        echo "## tmp sockets"
+        ls -l /tmp/sdk-platform-*.sock 2>/dev/null || true
+      } >> "$LOG_FILE"
 
-    echo "===== ROOT-LEVEL LOG-LIKE FILES ====="
-    find . -maxdepth 1 -type f \( -name "*.log" -o -name "*.txt" -o -name "*.out" \) | sort || true
+      CLI_BIN="$(find "$HOME/.browserstack/cli" -maxdepth 1 -type f -name 'binary-*' 2>/dev/null | head -n 1 || true)"
+      LOCAL_BIN="$HOME/.browserstack/BrowserStackLocal"
 
-    echo "===== CONTENT OF ROOT-LEVEL LOG-LIKE FILES ====="
-    while IFS= read -r f; do
-      echo "========== FILE: $f =========="
-      sed -n '1,400p' "$f" || true
-      echo
-    done < <(find . -maxdepth 1 -type f \( -name "*.log" -o -name "*.txt" -o -name "*.out" \) | sort)
+      PIDS=""
+      if [ -n "$CLI_BIN" ]; then
+        PIDS="$PIDS $(pgrep -f "$CLI_BIN" || true)"
+      fi
+      if [ -f "$LOCAL_BIN" ]; then
+        PIDS="$PIDS $(pgrep -f "$LOCAL_BIN" || true)"
+      fi
+      PIDS="$PIDS $(pgrep -f 'sdk-platform' || true)"
 
-    echo "===== CONTENT OF ALL FILES INSIDE log ====="
-    while IFS= read -r f; do
-      echo "========== FILE: $f =========="
-      sed -n '1,400p' "$f" || true
-      echo
-    done < <(find log -type f 2>/dev/null | sort || true)
+      if [ -n "${PIDS// }" ]; then
+        {
+          echo "===== TARGET DETECTED ====="
+          echo "CLI_BIN=$CLI_BIN"
+          echo "LOCAL_BIN=$LOCAL_BIN"
+          echo "PIDS=$PIDS"
+        } >> "$LOG_FILE"
 
-    echo "===== CONTENT OF ALL FILES INSIDE logs ====="
-    while IFS= read -r f; do
-      echo "========== FILE: $f =========="
-      sed -n '1,400p' "$f" || true
-      echo
-    done < <(find logs -type f 2>/dev/null | sort || true)
-  displayName: 'Print generated log and logs contents'
-  condition: always()
+        for pid in $PIDS; do
+          kill -9 "$pid" 2>/dev/null || true
+        done
+
+        pkill -9 -f "$HOME/.browserstack/cli/binary-" || true
+        pkill -9 -f "$HOME/.browserstack/BrowserStackLocal" || true
+        pkill -9 -f sdk-platform || true
+
+        {
+          echo "===== POST-KILL SNAPSHOT ====="
+          ps -ef | grep -E 'browserstack|sdk-platform|binary-|BrowserStackLocal' | grep -v grep || true
+          ls -l /tmp/sdk-platform-*.sock 2>/dev/null || true
+        } >> "$LOG_FILE"
+
+        exit 0
+      fi
+
+      sleep 1
+    done
+
+    echo "===== WATCHER TIMEOUT =====" >> "$LOG_FILE"
+    exit 0
+    EOF
+
+    chmod +x .ci-debug/watch-and-kill-browserstack-cli.sh
+    ./.ci-debug/watch-and-kill-browserstack-cli.sh .ci-debug/startbinsession-kill.log &
+    WATCHER_PID=$!
+
+    set +e
+    npm run local
+    RUN_EXIT=$?
+    set -e
+
+    wait "$WATCHER_PID" || true
+
+    echo "===== WATCHER LOG ====="
+    sed -n '1,500p' .ci-debug/startbinsession-kill.log || true
+
+    exit $RUN_EXIT
+  displayName: 'Run BrowserStack session and kill SDK CLI immediately after spawn'
+  env:
+    BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+    BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
