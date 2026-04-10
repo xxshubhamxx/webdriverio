@@ -112,13 +112,17 @@ steps:
     rm -rf "$HOME/.browserstack" || true
     mkdir -p "$HOME/.browserstack"
 
-    cat > .ci-debug/watch-and-kill-browserstack-cli.sh <<'EOF'
+    cat > .ci-debug/watch-for-socket-then-kill-cli.sh <<'EOF'
     #!/usr/bin/env bash
     set -u
     LOG_FILE="$1"
 
     echo "===== WATCHER START =====" >> "$LOG_FILE"
     date -Is >> "$LOG_FILE"
+
+    BASELINE_SOCKETS="$(ls /tmp/sdk-platform-*.sock 2>/dev/null | sort || true)"
+    echo "===== BASELINE SOCKETS =====" >> "$LOG_FILE"
+    printf '%s\n' "$BASELINE_SOCKETS" >> "$LOG_FILE"
 
     for i in $(seq 1 300); do
       {
@@ -133,32 +137,27 @@ steps:
       } >> "$LOG_FILE"
 
       CLI_BIN="$(find "$HOME/.browserstack/cli" -maxdepth 1 -type f -name 'binary-*' 2>/dev/null | head -n 1 || true)"
-      LOCAL_BIN="$HOME/.browserstack/BrowserStackLocal"
+      CURRENT_SOCKETS="$(ls /tmp/sdk-platform-*.sock 2>/dev/null | sort || true)"
+      NEW_SOCKET="$(comm -13 <(printf '%s\n' "$BASELINE_SOCKETS") <(printf '%s\n' "$CURRENT_SOCKETS") | tail -n 1 || true)"
 
-      PIDS=""
-      if [ -n "$CLI_BIN" ]; then
-        PIDS="$PIDS $(pgrep -f "$CLI_BIN" || true)"
-      fi
-      if [ -f "$LOCAL_BIN" ]; then
-        PIDS="$PIDS $(pgrep -f "$LOCAL_BIN" || true)"
-      fi
-      PIDS="$PIDS $(pgrep -f 'sdk-platform' || true)"
-
-      if [ -n "${PIDS// }" ]; then
+      if [ -n "$CLI_BIN" ] && [ -n "$NEW_SOCKET" ]; then
         {
-          echo "===== TARGET DETECTED ====="
+          echo "===== NEW SOCKET DETECTED ====="
           echo "CLI_BIN=$CLI_BIN"
-          echo "LOCAL_BIN=$LOCAL_BIN"
-          echo "PIDS=$PIDS"
+          echo "NEW_SOCKET=$NEW_SOCKET"
+          echo "Sleeping 2s before kill to bias toward ECONNREFUSED"
         } >> "$LOG_FILE"
 
-        for pid in $PIDS; do
+        sleep 2
+
+        CLI_PIDS="$(pgrep -f "$CLI_BIN" || true)"
+        {
+          echo "CLI_PIDS=$CLI_PIDS"
+        } >> "$LOG_FILE"
+
+        for pid in $CLI_PIDS; do
           kill -9 "$pid" 2>/dev/null || true
         done
-
-        pkill -9 -f "$HOME/.browserstack/cli/binary-" || true
-        pkill -9 -f "$HOME/.browserstack/BrowserStackLocal" || true
-        pkill -9 -f sdk-platform || true
 
         {
           echo "===== POST-KILL SNAPSHOT ====="
@@ -176,8 +175,8 @@ steps:
     exit 0
     EOF
 
-    chmod +x .ci-debug/watch-and-kill-browserstack-cli.sh
-    ./.ci-debug/watch-and-kill-browserstack-cli.sh .ci-debug/startbinsession-kill.log &
+    chmod +x .ci-debug/watch-for-socket-then-kill-cli.sh
+    ./.ci-debug/watch-for-socket-then-kill-cli.sh .ci-debug/econnrefused-watch.log &
     WATCHER_PID=$!
 
     set +e
@@ -188,10 +187,10 @@ steps:
     wait "$WATCHER_PID" || true
 
     echo "===== WATCHER LOG ====="
-    sed -n '1,500p' .ci-debug/startbinsession-kill.log || true
+    sed -n '1,500p' .ci-debug/econnrefused-watch.log || true
 
     exit $RUN_EXIT
-  displayName: 'Run BrowserStack session and kill SDK CLI immediately after spawn'
+  displayName: 'Run BrowserStack session and kill CLI after socket creation'
   env:
     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
