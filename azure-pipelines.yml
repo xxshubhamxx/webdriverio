@@ -1,7 +1,7 @@
 # Starter pipeline for BrowserStack WDIO v9 gRPC socket repro
 # Upgrades @wdio/* packages from ^7 to ^9 before install
 # Rewrites specs paths in all conf files from ./ to ../
-# Runs the sample repo's documented `npm run local` command
+# Tracks root log/logs directories and prints all files created there
 
 trigger:
 - main
@@ -60,42 +60,94 @@ steps:
 
     echo "After patch:"
     grep -Rni "specs: \\['\\.\\./" conf || true
-
-    echo "Patched conf files:"
-    find conf -type f \( -name "*.js" -o -name "*.cjs" -o -name "*.mjs" -o -name "*.ts" \) \
-      -exec sh -c 'echo "===== $1 ====="; sed -n "1,160p" "$1"' _ {} \;
   displayName: 'Patch specs paths in all conf files'
 
 - script: |
     set -euxo pipefail
     cd webdriverio-browserstack
 
-    echo "Repository root:"
+    mkdir -p .ci-debug
+
+    echo "===== BASELINE ROOT ====="
     pwd
     ls -lah
 
-    echo "conf directory:"
+    echo "===== BASELINE conf ====="
     ls -lah conf || true
 
-    echo "tests directory:"
-    ls -lah tests || true
+    echo "===== BASELINE tests/specs ====="
     ls -lah tests/specs || true
 
+    {
+      find . -maxdepth 1 -type f | sort
+      find . -maxdepth 1 -type d | sort
+      find log  -type f 2>/dev/null | sort || true
+      find logs -type f 2>/dev/null | sort || true
+    } > .ci-debug/before-files.txt
+
+    echo "Recorded baseline file snapshot:"
+    cat .ci-debug/before-files.txt
+  displayName: 'Record baseline filesystem snapshot'
+
+- script: |
+    set -euxo pipefail
+    cd webdriverio-browserstack
     npm install
   displayName: 'Install dependencies'
 
 - script: |
     set -euxo pipefail
     cd webdriverio-browserstack
-
-    echo "Running from:"
-    pwd
-    ls -lah
-    ls -lah conf || true
-    ls -lah tests/specs || true
-
     npm run local
   displayName: 'Run BrowserStack local session'
   env:
     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+- script: |
+    set -euxo pipefail
+    cd webdriverio-browserstack
+
+    echo "===== AFTER RUN ROOT ====="
+    pwd
+    ls -lah
+
+    echo "===== AFTER RUN DIRECTORIES ====="
+    ls -lah log || true
+    ls -lah logs || true
+
+    {
+      find . -maxdepth 1 -type f | sort
+      find . -maxdepth 1 -type d | sort
+      find log  -type f 2>/dev/null | sort || true
+      find logs -type f 2>/dev/null | sort || true
+    } > .ci-debug/after-files.txt
+
+    echo "===== NEW OR CHANGED PATHS OF INTEREST ====="
+    comm -13 .ci-debug/before-files.txt .ci-debug/after-files.txt || true
+
+    echo "===== ROOT-LEVEL LOG-LIKE FILES ====="
+    find . -maxdepth 1 -type f \( -name "*.log" -o -name "*.txt" -o -name "*.out" \) | sort || true
+
+    echo "===== CONTENT OF ROOT-LEVEL LOG-LIKE FILES ====="
+    while IFS= read -r f; do
+      echo "========== FILE: $f =========="
+      sed -n '1,400p' "$f" || true
+      echo
+    done < <(find . -maxdepth 1 -type f \( -name "*.log" -o -name "*.txt" -o -name "*.out" \) | sort)
+
+    echo "===== CONTENT OF ALL FILES INSIDE log ====="
+    while IFS= read -r f; do
+      echo "========== FILE: $f =========="
+      sed -n '1,400p' "$f" || true
+      echo
+    done < <(find log -type f 2>/dev/null | sort || true)
+
+    echo "===== CONTENT OF ALL FILES INSIDE logs ====="
+    while IFS= read -r f; do
+      echo "========== FILE: $f =========="
+      sed -n '1,400p' "$f" || true
+      echo
+    done < <(find logs -type f 2>/dev/null | sort || true)
+  displayName: 'Print generated log and logs contents'
+  condition: always()
