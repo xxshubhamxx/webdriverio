@@ -1,0 +1,62 @@
+# Starter pipeline for BrowserStack WDIO v9 gRPC socket repro
+# Upgrades @wdio/* packages from ^7 to ^9 before install
+# Runs the sample repo's documented `npm run local` command
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  displayName: 'Use Node.js 20.x'
+  inputs:
+    versionSpec: '20.x'
+
+- script: |
+    set -euxo pipefail
+    git clone --depth 1 https://github.com/browserstack/webdriverio-browserstack webdriverio-browserstack
+    cd webdriverio-browserstack
+    node --version
+    npm --version
+  displayName: 'Clone BrowserStack WDIO sample repo'
+
+- script: |
+    set -euxo pipefail
+    cd webdriverio-browserstack
+
+    # Rewrite @wdio/* deps from ^7 to ^9
+    node - <<'EOF'
+    const fs = require('fs')
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+    const sections = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']
+    for (const section of sections) {
+      if (!pkg[section]) continue
+      for (const [name, version] of Object.entries(pkg[section])) {
+        if (name.startsWith('@wdio/') && typeof version === 'string' && version.startsWith('^7')) {
+          pkg[section][name] = version.replace(/^\^7/, '^9')
+        }
+      }
+    }
+    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n')
+    EOF
+
+    echo "Updated package.json:"
+    cat package.json
+  displayName: 'Upgrade @wdio/* packages to ^9'
+
+- script: |
+    set -euxo pipefail
+    cd webdriverio-browserstack
+    npm install
+  displayName: 'Install dependencies'
+
+- script: |
+    set -euxo pipefail
+    cd webdriverio-browserstack
+    npm run local
+  displayName: 'Run BrowserStack local session'
+  env:
+    BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+    BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
