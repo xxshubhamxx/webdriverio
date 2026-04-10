@@ -145,7 +145,7 @@ steps:
           echo "===== NEW SOCKET DETECTED ====="
           echo "CLI_BIN=$CLI_BIN"
           echo "NEW_SOCKET=$NEW_SOCKET"
-          echo "Sleeping 2s before kill to bias toward ECONNREFUSED"
+          echo "Sleeping 2s before kill"
         } >> "$LOG_FILE"
 
         sleep 2
@@ -176,7 +176,7 @@ steps:
     EOF
 
     chmod +x .ci-debug/watch-for-socket-then-kill-cli.sh
-    ./.ci-debug/watch-for-socket-then-kill-cli.sh .ci-debug/econnrefused-watch.log &
+    ./.ci-debug/watch-for-socket-then-kill-cli.sh .ci-debug/socket-watch.log &
     WATCHER_PID=$!
 
     set +e
@@ -187,10 +187,10 @@ steps:
     wait "$WATCHER_PID" || true
 
     echo "===== WATCHER LOG ====="
-    sed -n '1,500p' .ci-debug/econnrefused-watch.log || true
+    sed -n '1,500p' .ci-debug/socket-watch.log || true
 
     exit $RUN_EXIT
-  displayName: 'Run BrowserStack session and kill CLI after socket creation'
+  displayName: 'Run BrowserStack session with socket watcher'
   env:
     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
