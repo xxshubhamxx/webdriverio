@@ -1,3 +1,0 @@
-// Snapshot v1
-
-exports[`main suite 1 > supports snapshot testing 1`] = `"<h1 class="findme">Test CSS Attributes</h1>"`;

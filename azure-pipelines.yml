@@ -1,5 +1,6 @@
 # Starter pipeline for BrowserStack WDIO v9 gRPC socket repro
 # Upgrades @wdio/* packages from ^7 to ^9 before install
+# Rewrites specs paths in all conf files from ./ to ../
 # Runs the sample repo's documented `npm run local` command
 
 trigger:
@@ -49,12 +50,50 @@ steps:
 - script: |
     set -euxo pipefail
     cd webdriverio-browserstack
+
+    echo "Before patch:"
+    find conf -type f | sort
+    grep -Rni "specs: \\['\\./" conf || true
+
+    find conf -type f \( -name "*.js" -o -name "*.cjs" -o -name "*.mjs" -o -name "*.ts" \) \
+      -exec perl -0pi -e "s/specs:\\s*\\[\\s*'\\.\\//specs: ['..\\//g" {} \;
+
+    echo "After patch:"
+    grep -Rni "specs: \\['\\.\\./" conf || true
+
+    echo "Patched conf files:"
+    find conf -type f \( -name "*.js" -o -name "*.cjs" -o -name "*.mjs" -o -name "*.ts" \) \
+      -exec sh -c 'echo "===== $1 ====="; sed -n "1,160p" "$1"' _ {} \;
+  displayName: 'Patch specs paths in all conf files'
+
+- script: |
+    set -euxo pipefail
+    cd webdriverio-browserstack
+
+    echo "Repository root:"
+    pwd
+    ls -lah
+
+    echo "conf directory:"
+    ls -lah conf || true
+
+    echo "tests directory:"
+    ls -lah tests || true
+    ls -lah tests/specs || true
+
     npm install
   displayName: 'Install dependencies'
 
 - script: |
     set -euxo pipefail
     cd webdriverio-browserstack
+
+    echo "Running from:"
+    pwd
+    ls -lah
+    ls -lah conf || true
+    ls -lah tests/specs || true
+
     npm run local
   displayName: 'Run BrowserStack local session'
   env:
