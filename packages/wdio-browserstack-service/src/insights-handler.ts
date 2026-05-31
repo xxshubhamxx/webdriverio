@@ -689,6 +689,12 @@ class _InsightsHandler {
             InsightsHandler.currentTest.name = test.title || test.description
         }
 
+        // SDK-5981: a finish event must never carry a null finished_at — an open
+        // timestamp leaves the test (and the build) looking unfinished. Default
+        // it for finish events only, mirroring reporter.ts's testStats.end ||=.
+        const isFinishEvent = eventType === 'TestRunFinished' || eventType === 'HookRunFinished' || eventType === 'TestRunSkipped'
+        const finishedAt = testMetaData.finishedAt ?? (isFinishEvent ? (new Date()).toISOString() : undefined)
+
         const testData: TestData = {
             uuid: testMetaData.uuid,
             type: test.type || 'test',
@@ -704,7 +710,7 @@ class _InsightsHandler {
             location: filename ? path.relative(process.cwd(), filename) : undefined,
             vc_filepath: (this._gitConfigPath && filename) ? path.relative(this._gitConfigPath, filename) : undefined,
             started_at: testMetaData.startedAt,
-            finished_at: testMetaData.finishedAt,
+            finished_at: finishedAt,
             result: 'pending',
             framework: this._framework
         }

@@ -711,6 +711,16 @@ export const getA11yResultsSummary = PerformanceTester.measureWrapper(PERFORMANC
 export const stopBuildUpstream = PerformanceTester.measureWrapper(PERFORMANCE_SDK_EVENTS.TESTHUB_EVENTS.STOP, o11yErrorHandler(async function stopBuildUpstream() {
     const stopBuildUsage = UsageStats.getInstance().stopBuildUsage
     stopBuildUsage.triggered()
+    // Idempotency guard (SDK-5981): if the build was already stopped in this
+    // process, do not send a second PUT .../stop. Termination paths can fire
+    // after onComplete has already stopped the build.
+    if (TestOpsConfig.getInstance().buildStopped) {
+        BStackLogger.debug('[STOP_BUILD] Build already stopped, skipping duplicate stop')
+        return {
+            status: 'success',
+            message: ''
+        }
+    }
     if (!process.env[TESTOPS_BUILD_COMPLETED_ENV]) {
         stopBuildUsage.failed('Build is not completed yet')
         return {
@@ -743,6 +753,8 @@ export const stopBuildUpstream = PerformanceTester.measureWrapper(PERFORMANCE_SD
         })
         BStackLogger.debug(`[STOP_BUILD] Success response: ${await response.text()}`)
         stopBuildUsage.success()
+        // Mark stopped so any later termination path is a no-op (SDK-5981).
+        TestOpsConfig.getInstance().buildStopped = true
         return {
             status: 'success',
             message: ''
