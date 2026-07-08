@@ -139,12 +139,23 @@ export default class AccessibilityModule extends BaseModule {
                 this.scriptInstance.commandsToWrap
                     .filter((command) => command.name && command.class)
                     .forEach((command) => {
-                        browser.overwriteCommand(
-                            // @ts-expect-error fix type
-                            command.name,
-                            this.commandWrapper.bind(this, command),
-                            command.class === 'Element'
-                        )
+                        // SDK-5047: guard each overwrite individually. WDIO's overwriteCommand throws
+                        // ("no command to be overwritten: <name>") when an entry in the backend-supplied
+                        // commandsToWrap list is not a registered command on this driver (observed on
+                        // WDIO v9 BiDi / non-standard drivers). Without a per-command guard the first such
+                        // throw aborts the whole forEach, so NO commands get wrapped and accessibility
+                        // scanning silently stops firing for the session. Mirrors the guard already present
+                        // in the classic AccessibilityHandler (accessibility-handler.ts).
+                        try {
+                            browser.overwriteCommand(
+                                // @ts-expect-error fix type
+                                command.name,
+                                this.commandWrapper.bind(this, command),
+                                command.class === 'Element'
+                            )
+                        } catch (error) {
+                            this.logger.debug(`Exception in overwrite command ${command.name} - ${error}`)
+                        }
                     })
             }
 
