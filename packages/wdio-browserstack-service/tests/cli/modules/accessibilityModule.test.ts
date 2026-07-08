@@ -56,6 +56,7 @@ import AutomationFramework from '../../../src/cli/frameworks/automationFramework
 import { AutomationFrameworkState } from '../../../src/cli/states/automationFrameworkState.js'
 import { HookState } from '../../../src/cli/states/hookState.js'
 import { TestFrameworkState } from '../../../src/cli/states/testFrameworkState.js'
+import { validateCapsWithA11y } from '../../../src/util.js'
 
 describe('AccessibilityModule', () => {
     let accessibilityModule: AccessibilityModule
@@ -197,6 +198,9 @@ describe('AccessibilityModule', () => {
         })
 
         it('should keep wrapping remaining commands when overwriteCommand throws for one (SDK-5047)', async () => {
+            // afterEach's vi.resetAllMocks() wipes the module-factory mockReturnValue(true),
+            // so re-arm it here or onBeforeExecute bails at the accessibility gate.
+            vi.mocked(validateCapsWithA11y).mockReturnValue(true)
             vi.mocked(AutomationFramework.getState).mockImplementation((instance, key) => {
                 if (key.includes('CAPABILITIES')) {
                     return { browserName: 'chrome' }
