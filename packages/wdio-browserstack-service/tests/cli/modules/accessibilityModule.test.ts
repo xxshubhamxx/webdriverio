@@ -195,6 +195,40 @@ describe('AccessibilityModule', () => {
 
             expect(mockBrowser.getAccessibilityResultsSummary).toBeUndefined()
         })
+
+        it('should keep wrapping remaining commands when overwriteCommand throws for one (SDK-5047)', async () => {
+            vi.mocked(AutomationFramework.getState).mockImplementation((instance, key) => {
+                if (key.includes('CAPABILITIES')) {
+                    return { browserName: 'chrome' }
+                }
+                if (key.includes('INPUT_CAPABILITIES')) {
+                    return {}
+                }
+                return 12345
+            })
+
+            // Two commands to wrap; the first throws exactly like WDIO's overwriteCommand does
+            // when the name is not a registered command (e.g. WDIO v9 BiDi / non-standard drivers).
+            accessibilityModule.scriptInstance = {
+                commandsToWrap: [
+                    { name: 'startA11yScanning', class: 'Browser' },
+                    { name: 'click', class: 'Element' }
+                ]
+            } as any
+            mockBrowser.overwriteCommand = vi.fn()
+                .mockImplementationOnce(() => {
+                    throw new Error('overwriteCommand: no command to be overwritten: startA11yScanning')
+                })
+                .mockImplementation(() => {})
+
+            // The throw on the first command must NOT abort the loop or bubble up.
+            await expect(accessibilityModule.onBeforeExecute()).resolves.toBeUndefined()
+
+            // Both commands must have had their overwrite attempted (loop not aborted by the first throw).
+            expect(mockBrowser.overwriteCommand).toHaveBeenCalledTimes(2)
+            expect(mockBrowser.overwriteCommand).toHaveBeenNthCalledWith(1, 'startA11yScanning', expect.any(Function), false)
+            expect(mockBrowser.overwriteCommand).toHaveBeenNthCalledWith(2, 'click', expect.any(Function), true)
+        })
     })
 
     describe('onBeforeTest', () => {
