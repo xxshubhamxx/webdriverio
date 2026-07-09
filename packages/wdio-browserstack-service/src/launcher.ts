@@ -50,6 +50,7 @@ import {
     coerceStringBooleans
 } from './util.js'
 import CrashReporter from './crash-reporter.js'
+import { finalizeOrphanedRuns } from './testOps/openRunsJournal.js'
 import { BStackLogger } from './bstackLogger.js'
 import { configureCaCertificate } from './caCert.js'
 import { PercyLogger } from './Percy/PercyLogger.js'
@@ -601,6 +602,9 @@ export default class BrowserstackLauncherService implements Services.ServiceInst
             const isCLIEnabled = BrowserstackCLI.getInstance().isRunning()
             BStackLogger.debug('Inside OnComplete hook..')
             BStackLogger.debug('Sending stop launch event')
+            // SDK-4671: before stopping the build, synthesize TestRunFinished for any
+            // test runs whose worker died mid-test, else they stay 'in progress' on TRA.
+            await finalizeOrphanedRuns()
             try {
                 await (isCLIEnabled ? BrowserstackCLI.getInstance().stop() : stopBuildUpstream())
                 PerformanceTester.end(PERFORMANCE_SDK_EVENTS.FRAMEWORK_EVENTS.STOP)
